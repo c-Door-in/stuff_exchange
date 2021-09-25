@@ -6,7 +6,7 @@ from stuff import Stuff
 
 class Main:
     def __init__(self, user_index):
-        self.user_index = user_index
+        self.user_index = str(user_index)
         self.users_db = Users()
         self.stuff_db = Stuff(user_index)
         self.current_index = None

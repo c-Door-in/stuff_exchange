@@ -21,8 +21,9 @@ class Stuff:
         return str(stuff_index)
 
     def create_new_card(self, stuff_dict):
+        stuff_index = self.count_stuff_index()
         db = self.db.open_db()
-        db['stuff_cards'][self.count_stuff_index()] = stuff_dict
+        db['stuff_cards'][stuff_index] = stuff_dict
         return self.db.write_to_db(db)
 
     def delete_stuff(self, stuff_index):
