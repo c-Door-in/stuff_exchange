@@ -84,7 +84,7 @@ def message_handler(update, context):
 def photo_handler(update, context):
     user_id = update.message.from_user.id # получаем user_id
     main_class = Main(user_id)
-    os.makedirs(str(user_id), exist_ok=True) # создаем категорию по user_id
+    os.makedirs(f'users_img/{user_id}', exist_ok=True) # создаем категорию по user_id
     print(user_id)
     photo = update.message.photo[-1].get_file() # получаем фотку
     path = 'users_img/{0}/{1}.jpg'.format(user_id, photo.file_unique_id) # путь к фотке

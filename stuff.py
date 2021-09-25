@@ -23,23 +23,23 @@ class Stuff:
     def create_new_card(self, stuff_dict):
         db = self.db.open_db()
         db['stuff_cards'][self.count_stuff_index()] = stuff_dict
-        return self.db.add_to_db(db)
+        return self.db.write_to_db(db)
 
     def delete_stuff(self, stuff_index):
         db = self.db.open_db()
         del db['stuff_cards'][stuff_index]
-        return self.db.add_to_db(db)
+        return self.db.write_to_db(db)
 
     def show_stuff_one_by_one(self):
         db = self.db.open_db()
         for stuff_index, card in db['stuff_cards'].items():
             if not 'seen' in card:
                 db['stuff_cards'][stuff_index]['seen'] = True
-                self.db.add_to_db(db)
+                self.db.write_to_db(db)
                 return (stuff_index, card)
         for stuff_index, card in db['stuff_cards'].items():
             del db['stuff_cards'][stuff_index]['seen']
-        self.db.add_to_db(db)
+        self.db.write_to_db(db)
         return False
 
     def check_for_likes(self):

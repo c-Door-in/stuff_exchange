@@ -23,7 +23,7 @@ class Main:
             'image_path': image_path,
         }
         self.stuff_db.create_new_card(new_stuff)
-        return 'Добавлено {name}, {description}, {image_path}'.format(**new_stuff)
+        return 'Добавлено {name}, {description}'.format(**new_stuff)
 
     def remove_stuff(self, stuff_index):
         self.stuff_db.delete_stuff(stuff_index)
