@@ -5,8 +5,9 @@ from stuff import Stuff
 
 
 class Main:
-    def __init__(self, user_index):
+    def __init__(self, user_index, user_name=''):
         self.user_index = str(user_index)
+        self.user_name = user_name
         self.users_db = Users()
         self.stuff_db = Stuff(user_index)
         self.current_index = None
@@ -14,13 +15,14 @@ class Main:
     def authorization(self):
         return self.users_db.check_for_user(self.user_index)
 
-    def add_stuff(self, image_path, name='Без имени', description=''):
+    def add_stuff(self, image_id, name='Без имени', description=''):
         if not self.authorization():
+            self.users_db.create_user(self.user_index, self.user_name)
             self.stuff_db.create_stuff_db()
         new_stuff = {
             'name': name,
             'description': description,
-            'image_path': image_path,
+            'image_id': image_id,
         }
         self.stuff_db.create_new_card(new_stuff)
         return 'Добавлено {name}, {description}'.format(**new_stuff)
@@ -34,12 +36,12 @@ class Main:
         for user_index in self.users_db.show_users_db().keys():
             if user_index != self.user_index:
                 other_user_stuff_db = Stuff(user_index)
-                next_card = other_user_stuff_db.show_stuff_one_by_one(user_index)
+                next_card = other_user_stuff_db.show_stuff_one_by_one()
                 if next_card:
                     stuff_index, stuff_card = next_card
-                    print(stuff_card['name'])
-                    print(stuff_card['description'])
-                    print(stuff_card['image_path'])
+                    print('show', stuff_card['name'])
+                    # print(stuff_card['description'])
+                    # print(stuff_card['image_id'])
                     self.current_index = (user_index, stuff_index)
                     return stuff_card
         return False

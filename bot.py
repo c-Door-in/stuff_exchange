@@ -87,7 +87,7 @@ def photo_handler(update, context):
     user_id = update.message.from_user.id # получаем user_id
     user = update.message.from_user # получаем юзера
     name = user.first_name # получаем имя
-    main_class = Main(user_id)
+    main_class = Main(user_id, name)
     os.makedirs(f'users_img/{user_id}', exist_ok=True) # создаем категорию по user_id
     photo = update.message.photo[-1].get_file() # получаем фотку
     photo_id = photo.file_id
@@ -97,21 +97,38 @@ def photo_handler(update, context):
     context.bot.send_message(
             chat_id=update.effective_chat.id,
             # text='Фотография загружена.',
-            text=main_class.add_stuff(photo.file_path),
+            text=main_class.add_stuff(photo_id, name=caption),
             reply_markup=create_menu(),
         )
 
 
 
 def find_handler(update, context):
-    update.message.bot.send_photo(
-        chat_id=update.effective_chat.id,
-        photo='AgACAgIAAxkBAANhYU836WbOGNE841_O69r-kSbwIrgAApC3MRvcqHhKe4ZmKb32FXQBAAMCAAN4AAMhBA', # photo_id из photo_handler
-        caption='Цыплята' # caption из photo_handler
-    )
+    user_id = update.message.from_user.id # получаем user_id
+    main_class = Main(user_id)
+    if not main_class.authorization():
+        print(user_id, bool(main_class.authorization()))
+        update.message.bot.send_message(
+            chat_id=update.effective_chat.id, 
+            text="Сперва нужно добавить свою вещь.", 
+            reply_markup=create_menu()
+        )
+    else:
+        stuff_card = main_class.find_stuff()
+        if not stuff_card:
+            update.message.bot.send_message(
+                chat_id=update.effective_chat.id, 
+                text="Это пока все. Нажмите Найти, чтобы начать заново", 
+                reply_markup=create_menu()
+            )
+        update.message.bot.send_photo(
+            chat_id=update.effective_chat.id,
+            photo = stuff_card['image_id'], # photo_id из photo_handler
+            caption = stuff_card['name'] # caption из photo_handler
+        )
         
 
-TOKEN = '2016207089:AAHo0N5iqbM5J65arivRffqsNK40UZ-JvKM'
+TOKEN = '2030294717:AAHT1K9GSqCM_U1xEMRs8eYN1doY1Cltbzk'
 updater = Updater(TOKEN, use_context=True)
 dispatcher = updater.dispatcher
 dispatcher.add_handler(CommandHandler("start", start))
