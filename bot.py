@@ -56,6 +56,7 @@ def message_handler(update, context):
             reply_markup=create_upload_menu()
         )
     elif update.message.text == "Найти вещь":
+        find_handler(update, context)
         context.bot.send_message(
             chat_id=update.effective_chat.id, 
             text="Тут будет случайное фото", 
@@ -81,23 +82,36 @@ def message_handler(update, context):
         )    
 
 
+
 def photo_handler(update, context):
     user_id = update.message.from_user.id # получаем user_id
+    user = update.message.from_user # получаем юзера
+    name = user.first_name # получаем имя
     main_class = Main(user_id)
     os.makedirs(f'users_img/{user_id}', exist_ok=True) # создаем категорию по user_id
-    print(user_id)
     photo = update.message.photo[-1].get_file() # получаем фотку
+    photo_id = photo.file_id
     path = 'users_img/{0}/{1}.jpg'.format(user_id, photo.file_unique_id) # путь к фотке
-    print(photo.file_path)
+    caption = update.message.caption # получаем описание к фотке
     photo.download(path) # сохраняем фотку
     context.bot.send_message(
             chat_id=update.effective_chat.id,
-            # text='Фотография загружена. А теперь отправьте название вещи.',
+            # text='Фотография загружена.',
             text=main_class.add_stuff(photo.file_path),
             reply_markup=create_menu(),
         )
 
-TOKEN = '2030294717:AAHT1K9GSqCM_U1xEMRs8eYN1doY1Cltbzk'
+
+
+def find_handler(update, context):
+    update.message.bot.send_photo(
+        chat_id=update.effective_chat.id,
+        photo='AgACAgIAAxkBAANhYU836WbOGNE841_O69r-kSbwIrgAApC3MRvcqHhKe4ZmKb32FXQBAAMCAAN4AAMhBA', # photo_id из photo_handler
+        caption='Цыплята' # caption из photo_handler
+    )
+        
+
+TOKEN = '2016207089:AAHo0N5iqbM5J65arivRffqsNK40UZ-JvKM'
 updater = Updater(TOKEN, use_context=True)
 dispatcher = updater.dispatcher
 dispatcher.add_handler(CommandHandler("start", start))
