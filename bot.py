@@ -64,13 +64,46 @@ def message_handler(update, context):
         # )
     elif update.message.text == "Обменяться":
         user_id = update.message.from_user.id # получаем user_id
+        username = update.message.from_user.username
         main_class = Main(user_id)
-        changing = main_class.change_stuff()
-        if changing:            
+        match = main_class.change_stuff()
+        if match:
+            user_stuff_card, owner_index, owner_username, owner_stuff_card = match
+            user_msg_text = "BINGO!!! Вашу {0} хотят обменять на {1}".format(user_stuff_card['name'], owner_stuff_card['name'])
+            owner_msg_text = "BINGO!!! Вашу {0} хотят обменять на {1}".format(owner_stuff_card['name'], user_stuff_card['name'])
             context.bot.send_message(
-                chat_id=update.effective_chat.id, 
-                text="Тут будут контакты для обмена (после взаимного нажатия кнопки 'Обменяться'", 
+                chat_id=update.effective_chat.id,
+                text=f"{user_msg_text}. Напишите @{owner_username}", 
                 reply_markup=create_menu()
+            )
+            update.message.bot.send_photo(
+                chat_id=update.effective_chat.id,
+                photo = user_stuff_card["image_id"],
+                caption = user_stuff_card["name"],
+                reply_markup=create_menu(),
+            )
+            update.message.bot.send_photo(
+                chat_id=update.effective_chat.id,
+                photo = owner_stuff_card["image_id"],
+                caption = owner_stuff_card["name"],
+                reply_markup=create_menu(),
+            )
+            context.bot.send_message(
+                chat_id=owner_index, 
+                text=f"{owner_msg_text}. Напишите @{username}", 
+                reply_markup=create_menu()
+            )
+            update.message.bot.send_photo(
+                chat_id=owner_index,
+                photo = owner_stuff_card["image_id"],
+                caption = owner_stuff_card["name"],
+                reply_markup=create_menu(),
+            )
+            update.message.bot.send_photo(
+                chat_id=owner_index,
+                photo = user_stuff_card["image_id"],
+                caption = user_stuff_card["name"],
+                reply_markup=create_menu(),
             )
         else:
             context.bot.send_message(
@@ -96,8 +129,9 @@ def message_handler(update, context):
 def photo_handler(update, context):
     user_id = update.message.from_user.id # получаем user_id
     user = update.message.from_user # получаем юзера
-    name = user.first_name # получаем имя
-    main_class = Main(user_id, name)
+    first_name = user.first_name # получаем имя
+    username = user.username 
+    main_class = Main(user_id, username, first_name)
     os.makedirs(f'users_img/{user_id}', exist_ok=True) # создаем категорию по user_id
     photo = update.message.photo[-1].get_file() # получаем фотку
     photo_id = photo.file_id
