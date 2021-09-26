@@ -1,3 +1,4 @@
+from random import shuffle
 from pprint import pprint
 from database import Database
 from users import Users
@@ -10,7 +11,6 @@ class Main:
         self.user_name = user_name
         self.users_db = Users()
         self.stuff_db = Stuff(user_index)
-        self.current_index = None
     
     def authorization(self):
         return self.users_db.check_for_user(self.user_index)
@@ -28,40 +28,55 @@ class Main:
         return 'Добавлено {name}, {description}'.format(**new_stuff)
 
     def remove_stuff(self, stuff_index):
+        deleted_card = self.stuff_db.get_card_by_index(stuff_index)
         self.stuff_db.delete_stuff(stuff_index)
-        user_index = self.user_index
-        return f'Stuff {stuff_index} from {user_index} has been deleted'
+        return deleted_card
 
     def find_stuff(self):
-        for user_index in self.users_db.show_users_db().keys():
+        liked_users = self.stuff_db.check_for_likes()
+        if liked_users:
+            for _ in liked_users:
+                next_card = self.get_next_card()
+                if next_card:
+                    return next_card
+        return self.get_next_card()
+
+    def get_next_card(self):
+        user_list = list(self.users_db.show_users_db().keys())
+        shuffle(user_list)
+        for user_index in user_list:
             if user_index != self.user_index:
                 other_user_stuff_db = Stuff(user_index)
                 next_card = other_user_stuff_db.show_stuff_one_by_one()
                 if next_card:
-                    stuff_index, stuff_card = next_card
-                    print('show', stuff_card['name'])
-                    # print(stuff_card['description'])
-                    # print(stuff_card['image_id'])
-                    self.current_index = (user_index, stuff_index)
-                    return stuff_card
+                    return next_card
         return False
 
-    # def change_stuff(self):
-    #     owner_index, stuff_index = self.current_index
-    #     liked_users = self.stuff_db.check_for_likes(user_id)
-    #     if owner_index in liked_users:
-    #         return self.execute_match(user_id, self.current_index, liked_users[owner_index])
-    #     self.stuff_db.add_like(user_id, owner_index, stuff_index)
-    #     return
+    def change_stuff(self):
+        owner_index, current_stuff_index = Database('current').open_db()
+        liked_users = self.stuff_db.check_for_likes()
+        if not liked_users:
+            owner_stuff_db = Stuff(owner_index)
+            owner_stuff_db.add_like(current_stuff_index)
+            return False
+        if owner_index in liked_users:
+            match_set = [owner_index, current_stuff_index, liked_users[owner_index][0]]
+            return self.execute_match(match_set)
 
-    # def execute_match(self, user_id, current_stuff_tuple, liked_stuff_list):
-    #     owner_index, stuff_index = current_stuff_tuple
-    #     user_stuff = self.stuff_db.get_card_by_index(user_id, liked_stuff_list[0])
-    #     other_stuff = self.stuff_db.get_card_by_index(owner_index, stuff_index)
-    #     self.stuff_db.add_changed_status(user_id, liked_stuff_list[0])
-    #     self.stuff_db.add_changed_status(owner_index, stuff_index)
-    #     print('BINGO!!!')
-    #     print('{name}\n{description}\n{image_path}'.format(**user_stuff))
-    #     print('<-->')
-    #     print('{name}\n{description}\n{image_path}'.format(**other_stuff))
-    #     return
+    def execute_match(self, *match_set):
+        owner_index, current_stuff_index, liked_stuff_index = match_set
+        owner_stuff_db = Stuff(owner_index)
+        user_stuff = self.stuff_db.get_card_by_index(liked_stuff_index)
+        owner_stuff = owner_stuff_db.get_card_by_index(current_stuff_index)
+        self.change_stuff_status(match_set)
+        print('BINGO!!!')
+        user_changing_stuff = '{0} от {1}'.format(user_stuff['name'], self.user_name)
+        print('<-->')
+        owner_changing_stuff = '{0} от {1}'.format(owner_stuff['name'], self.users_db[owner_index]['name'])
+        return f'BINGO!!! {user_changing_stuff} <--> {owner_changing_stuff}'
+
+    def change_stuff_status(self, owner_index, current_stuff_index, liked_stuff_index):
+        owner_stuff_db = Stuff(owner_index)
+        self.stuff_db.add_changed_status(liked_stuff_index)
+        owner_stuff_db.add_changed_status(current_stuff_index)
+        return

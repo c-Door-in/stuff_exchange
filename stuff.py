@@ -1,9 +1,11 @@
 import collections
+from random import shuffle
 from database import Database
 
 
 class Stuff:
     def __init__(self, user_index):
+        self.user_index = user_index
         self.db = Database(f'user_{user_index}')
 
     def create_stuff_db(self):
@@ -33,14 +35,10 @@ class Stuff:
 
     def show_stuff_one_by_one(self):
         db = self.db.open_db()
-        for stuff_index, card in db['stuff_cards'].items():
-            if not 'seen' in card:
-                db['stuff_cards'][stuff_index]['seen'] = True
-                self.db.write_to_db(db)
-                return (stuff_index, card)
-        for stuff_index, card in db['stuff_cards'].items():
-            del db['stuff_cards'][stuff_index]['seen']
-        self.db.write_to_db(db)
+        user_cards = list(db['stuff_cards'].values())
+        shuffle(user_cards)
+        for card in user_cards:
+            return card
         return False
 
     def check_for_likes(self):
@@ -53,21 +51,22 @@ class Stuff:
                 return liked_users
         return False
 
-    # def add_like(self, owner_index, stuff_index):
-    #     db = self.db.open_db()
-    #     if not 'likes' in db[owner_index]['stuff_cards'][str(stuff_index)]:
-    #         user_dict[owner_index]['stuff_cards'][str(stuff_index)]['likes'] = [str(user_index)]
-    #     else:
-    #         user_dict[owner_index]['stuff_cards'][str(stuff_index)]['likes'].append(user_index)
-    #     self.db.add_to_db(user_dict)
-    #     return
+    def add_like(self, stuff_index):
+        db = self.db.open_db()
+        if not 'likes' in db['stuff_cards'][stuff_index]:
+            db['stuff_cards'][stuff_index]['likes'] = [self.user_index]
+        else:
+            db['stuff_cards'][stuff_index]['likes'].append(self.user_index)
+        self.db.write_to_db(db)
+        return
 
-    # def add_changed_status(self, user_index, stuff_index):
-    #     user_dict = self.db.open_db()
-    #     user_dict[str(user_index)]['stuff_cards'][str(stuff_index)]['changed'] = True
-    #     self.db.add_to_db(user_dict)
-    #     return
+    def add_changed_status(self, stuff_index):
+        db = self.db.open_db()
+        db['stuff_cards'][stuff_index]['changed'] = True
+        self.db.write_to_db(db)
+        return
 
-    # def get_card_by_index(self, user_index, stuff_index):
-    #     user_dict = self.db.open_db()
-    #     return user_dict[str(user_index)]['stuff_cards'][str(stuff_index)]
+    def get_card_by_index(self, stuff_index):
+        db = self.db.open_db()
+        return db['stuff_cards'][stuff_index]
+        

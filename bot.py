@@ -57,17 +57,27 @@ def message_handler(update, context):
         )
     elif update.message.text == "Найти вещь":
         find_handler(update, context)
-        context.bot.send_message(
-            chat_id=update.effective_chat.id, 
-            text="Тут будет случайное фото", 
-            reply_markup=create_menu()
-        )
+        # context.bot.send_message(
+        #     chat_id=update.effective_chat.id, 
+        #     text="Тут будет случайное фото", 
+        #     reply_markup=create_menu()
+        # )
     elif update.message.text == "Обменяться":
-        context.bot.send_message(
-            chat_id=update.effective_chat.id, 
-            text="Тут будут контакты для обмена (после взаимного нажатия кнопки 'Обменяться'", 
-            reply_markup=create_menu()
-        )    
+        user_id = update.message.from_user.id # получаем user_id
+        main_class = Main(user_id)
+        changing = main_class.change_stuff()
+        if changing:            
+            context.bot.send_message(
+                chat_id=update.effective_chat.id, 
+                text="Тут будут контакты для обмена (после взаимного нажатия кнопки 'Обменяться'", 
+                reply_markup=create_menu()
+            )
+        else:
+            context.bot.send_message(
+                chat_id=update.effective_chat.id, 
+                text="Успешно добавлено в список желаний", 
+                reply_markup=create_menu()
+            )
     elif update.message.text == "Загрузить фото":
         context.bot.send_message(
             chat_id=update.effective_chat.id, 
@@ -124,7 +134,8 @@ def find_handler(update, context):
         update.message.bot.send_photo(
             chat_id=update.effective_chat.id,
             photo = stuff_card['image_id'], # photo_id из photo_handler
-            caption = stuff_card['name'] # caption из photo_handler
+            caption = stuff_card['name'], # caption из photo_handler
+            reply_markup=create_menu(),
         )
         
 
