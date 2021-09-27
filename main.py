@@ -16,17 +16,17 @@ class Main:
     def authorization(self):
         return self.users_db.check_for_user(self.user_index, self.username)
 
-    def add_stuff(self, image_id, name='Без имени', description=''):
+    def add_stuff(self, image_id, name='Без имени'):
         if not self.authorization():
             self.users_db.create_user(self.user_index, self.username, self.first_name)
             self.stuff_db.create_stuff_db()
         new_stuff = {
             'name': name,
-            'description': description,
+            #'description': description,
             'image_id': image_id,
         }
         self.stuff_db.create_new_card(new_stuff)
-        return 'Добавлено {name}, {description}'.format(**new_stuff)
+        return 'Добавлено {name}.'.format(**new_stuff)
 
     def remove_stuff(self, stuff_index):
         deleted_card = self.stuff_db.get_card_by_index(stuff_index)
