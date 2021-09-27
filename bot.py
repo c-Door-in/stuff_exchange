@@ -173,7 +173,7 @@ def find_handler(update, context):
         )
         
 
-TOKEN = '2030294717:AAHT1K9GSqCM_U1xEMRs8eYN1doY1Cltbzk'
+TOKEN = '2030294717:AAFr3QGX0oWGA0-whwgy5DUmSYIY6z64M8s'
 updater = Updater(TOKEN, use_context=True)
 dispatcher = updater.dispatcher
 dispatcher.add_handler(CommandHandler("start", start))

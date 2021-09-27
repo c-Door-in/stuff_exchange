@@ -50,8 +50,7 @@ class Stuff:
                     if not user in liked_users:
                         liked_users[user] = [stuff_index]
                     liked_users[user].append(stuff_index)
-                return liked_users
-        return False
+        return liked_users
 
     def add_like(self, stuff_index, user_id):
         db = self.db.open_db()

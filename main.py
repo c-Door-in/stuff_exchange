@@ -57,6 +57,8 @@ class Main:
         owner_index, current_stuff_index = Database('current').open_db()
         liked_users = self.stuff_db.check_for_likes()
         print('this stuff', owner_index, current_stuff_index)
+        print('user', self.user_index)
+        print('liked_users', liked_users)
         if not liked_users:
             owner_stuff_db = Stuff(owner_index)
             owner_stuff_db.add_like(current_stuff_index, self.user_index)
