@@ -1,21 +1,28 @@
 import os
 import telegram
+from dotenv import load_dotenv
 from telegram import Update, KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters
 from main import Main
 
-#from dotenv import load_dotenv
-
 
 def start(update, context):
-    context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text="Привет! Я помогу тебе обменять что-то ненужное на очень нужное. Чтобы разместить вещь к обмену нажми - 'Добавить вещь'." 
-             "После этого тебе станут доступны вещи других пользователей. Нажми 'Найти вещь' и я пришлю тебе фотографии вещей для обмена." 
-             "Понравилась вещь - нажми 'Обменяться', нет - снова нажимай 'Найти вещь'. Если кому-то понравится предложенная тобой вещь, то я" 
-             "пришлю тебе контакты владельца.",
-        reply_markup=create_menu(),
-    )
+    username = update.message.from_user.username
+    if username == None:
+            context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="Привет! У тебя не задан @username в Telegram. Для корректной работы бота тебе нужно задать его настройках профиля и снова нажать /start.",
+            reply_markup=create_menu(),
+        )
+    else:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="Привет! Я помогу тебе обменять что-то ненужное на очень нужное. Чтобы разместить вещь к обмену нажми - 'Добавить вещь'." 
+                "После этого тебе станут доступны вещи других пользователей. Нажми 'Найти вещь' и я пришлю тебе фотографии вещей для обмена." 
+                "Понравилась вещь - нажми 'Обменяться', нет - снова нажимай 'Найти вещь'. Нажал “обменяться”? - если владельцу вещи понравится"
+                "что-то из твоих вещей, то я пришлю контакты вам обоим.",
+            reply_markup=create_menu(),
+        )
 
 
 def create_menu():
@@ -32,36 +39,15 @@ def create_menu():
     return buttons
 
 
-def create_upload_menu():
-    buttons = ReplyKeyboardMarkup(
-        keyboard=[
-            [
-                KeyboardButton(text='Загрузить фото'),
-                KeyboardButton(text='Загрузить название вещи'),
-            ],
-            [
-                KeyboardButton(text='Назад')
-            ]
-        ],
-        resize_keyboard=True
-    )        
-    return buttons    
-
-
 def message_handler(update, context):
     if update.message.text == "Добавить вещь":
         context.bot.send_message(
-            chat_id=update.effective_chat.id, 
-            text="Загрузите фото и название предмета", 
-            reply_markup=create_upload_menu()
+            chat_id=update.effective_chat.id,
+            text="Загрузите, пожалуйста, фото и подпись (caption) к предмету.",
+            reply_markup=create_menu()
         )
     elif update.message.text == "Найти вещь":
         find_handler(update, context)
-        # context.bot.send_message(
-        #     chat_id=update.effective_chat.id, 
-        #     text="Тут будет случайное фото", 
-        #     reply_markup=create_menu()
-        # )
     elif update.message.text == "Обменяться":
         user_id = update.message.from_user.id # получаем user_id
         username = update.message.from_user.username
@@ -111,19 +97,12 @@ def message_handler(update, context):
                 text="Успешно добавлено в список желаний", 
                 reply_markup=create_menu()
             )
-    elif update.message.text == "Загрузить фото":
+    else:
         context.bot.send_message(
             chat_id=update.effective_chat.id, 
-            text="Загрузите фото",
-            reply_markup=create_upload_menu()
-        )
-    elif update.message.text == "Назад":
-        context.bot.send_message(
-            chat_id=update.effective_chat.id, 
-            text="Вы снова в главном меню.", 
+            text="Вы ввели неверную команду. Нажмите, пожалуйста, одну из кнопок ниже.",
             reply_markup=create_menu()
-        )    
-
+        )
 
 
 def photo_handler(update, context):
@@ -140,11 +119,9 @@ def photo_handler(update, context):
     photo.download(path) # сохраняем фотку
     context.bot.send_message(
             chat_id=update.effective_chat.id,
-            # text='Фотография загружена.',
             text=main_class.add_stuff(photo_id, name=caption),
             reply_markup=create_menu(),
         )
-
 
 
 def find_handler(update, context):
@@ -171,14 +148,19 @@ def find_handler(update, context):
             caption = stuff_card['name'], # caption из photo_handler
             reply_markup=create_menu(),
         )
-        
 
-TOKEN = '2030294717:AAFr3QGX0oWGA0-whwgy5DUmSYIY6z64M8s'
-updater = Updater(TOKEN, use_context=True)
-dispatcher = updater.dispatcher
-dispatcher.add_handler(CommandHandler("start", start))
-dispatcher.add_handler(MessageHandler(filters=Filters.text, callback=message_handler))
-dispatcher.add_handler(MessageHandler(filters=Filters.photo, callback=photo_handler))
 
-updater.start_polling()
-updater.idle()
+def main():
+    load_dotenv()
+    tg_token = os.environ['TG_TOKEN']
+    updater = Updater(tg_token, use_context=True)
+    dispatcher = updater.dispatcher
+    dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(MessageHandler(filters=Filters.text, callback=message_handler))
+    dispatcher.add_handler(MessageHandler(filters=Filters.photo, callback=photo_handler))
+
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
