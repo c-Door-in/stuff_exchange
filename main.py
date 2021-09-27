@@ -56,9 +56,6 @@ class Main:
     def change_stuff(self):
         owner_index, current_stuff_index = Database('current').open_db()
         liked_users = self.stuff_db.check_for_likes()
-        print('this stuff', owner_index, current_stuff_index)
-        print('user', self.user_index)
-        print('liked_users', liked_users)
         if not liked_users:
             owner_stuff_db = Stuff(owner_index)
             owner_stuff_db.add_like(current_stuff_index, self.user_index)
@@ -75,9 +72,9 @@ class Main:
         owner_stuff_card = owner_stuff_db.get_card_by_index(current_stuff_index)
         self.change_stuff_status((owner_index, current_stuff_index, liked_stuff_index))
         print('BINGO!!!')
-        print('{0} от {1}'.format(user_stuff_card['name'], self.username))
+        print('{0} от {1}, id {2}'.format(user_stuff_card['name'], self.username, self.user_index))
         print('<-->')
-        print('{0} от {1}'.format(owner_stuff_card['name'], self.users_db.show_users_db()[owner_index]['name']))
+        print('{0} от {1}, id {2}'.format(owner_stuff_card['name'], owner_username, owner_index))
         return (user_stuff_card, owner_index, owner_username, owner_stuff_card)
 
     def change_stuff_status(self, match_set):
